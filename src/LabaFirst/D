@@ -1,0 +1,74 @@
+#include<bits/stdc++.h>
+
+#define freopen(x) freopen(x".in", "r", stdin), freopen (x".out", "w", stdout);
+
+using namespace std;
+
+const int MAXN = (int)(1e6) + 7;
+
+struct china {
+    int sum, var;
+    bool u1, u2;
+    china() {
+        sum = var = u1 = u2 = 0;
+    }
+
+    china(int _sum, int _var, bool _u1, bool _u2) {
+        sum = _sum;
+        var = _var;
+        u1 = _u1;
+        u2 = _u2;
+    }
+};
+
+int n;
+china a[MAXN * 5];
+int b[MAXN * 5];
+
+void push(int v, int l, int r) {
+    if (!b[v])
+        return ;
+    a[v].sum = (r - l + 1) * (b[v] - 1);
+    a[v].u2 = a[v].u1 = a[v].var = b[v] - 1;
+    if (r > l)
+        b[v * 2 + 1] = b[v * 2 + 2] = b[v];
+    b[v] = 0;
+}
+
+void upd(int v, int l, int r, int x, int y, int z) {
+    push(v, l, r);
+    if (x > y) {
+        return;
+    }
+    if (l == x && r == y) {
+        b[v] = (int)(z) + 1;
+        push(v, l, r);
+    } else {
+        int m = (l + r) >> 1;
+        upd(v + v + 1, l, m, x, min(y, m), z);
+        upd(v + v + 2, m + 1, r, max(x, m + 1), y, z);
+        push(v + v + 1, l, m);
+        push(v + v + 2, m + 1, r);
+        a[v] = china(a[v * 2 + 1].sum + a[v * 2 + 2].sum, a[v * 2 + 1].var + a[v * 2 + 2].var, a[v * 2 + 1].u1, a[v * 2 + 2].u2);
+        if (a[v + v + 1].u2 && a[v + v + 2].u1) {
+            a[v].var--;
+        }
+    }
+}
+
+int main() {
+    cin >> n;
+    for (int i = 0; i < n; ++i) {
+        char x;
+        int l, r;
+        cin >> x >> l >> r;
+        l += (int)(5e5) + 1;
+        if (x == 'W')
+            upd(0, 0, MAXN - 1, l, l + r - 1, 0);
+        else
+            upd(0, 0, MAXN - 1, l, l + r - 1, 1);
+        cout << a[0].var << ' ' << a[0].sum << endl;
+    }
+
+    return 0;
+}
